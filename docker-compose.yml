@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gestao_colaboradores_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gestao
+      POSTGRES_PASSWORD: gestao123
+      POSTGRES_DB: gestao_colaboradores
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gestao -d gestao_colaboradores"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Serviço da API (diferencial). Para subir apenas o banco: `docker compose up -d postgres`
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gestao_colaboradores_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=gestao_colaboradores;Username=gestao;Password=gestao123"
+    ports:
+      - "5080:8080"
+
+volumes:
+  postgres_data:
+    driver: local

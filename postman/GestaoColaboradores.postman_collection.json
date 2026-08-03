@@ -1,0 +1,334 @@
+{
+  "info": {
+    "name": "Gestão de Colaboradores e Unidades API",
+    "description": "Collection da API .NET 8 (Sistema de Gestão de Colaboradores e Unidades).\n\nComo usar:\n1. Suba o PostgreSQL (docker compose up) e rode a API.\n2. Execute a requisição **Auth > Login**. O script da aba Tests captura o token automaticamente e o grava na variável {{token}}.\n3. Todas as demais rotas já usam Bearer {{token}} herdado da collection. Basta disparar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5080", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Master)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Toque de Sênior: injeta o token automaticamente na variável {{token}}.",
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    pm.environment.set('token', json.token);",
+                  "    console.log('Token capturado e salvo em {{token}}.');",
+                  "} else {",
+                  "    console.warn('Resposta sem campo token.');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"master\",\n  \"senha\": \"Master@123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/usuarios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios"]
+            }
+          }
+        },
+        {
+          "name": "Obter Usuario por Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/usuarios/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios", ":id"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        },
+        {
+          "name": "Criar Usuario",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"U001\",\n  \"login\": \"joao.silva\",\n  \"senha\": \"Senha@123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/usuarios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios"]
+            }
+          }
+        },
+        {
+          "name": "Alterar Senha (RN03)",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"novaSenha\": \"NovaSenha@456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/usuarios/:id/senha",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios", ":id", "senha"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        },
+        {
+          "name": "Ativar Usuario",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/usuarios/:id/ativar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios", ":id", "ativar"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        },
+        {
+          "name": "Inativar Usuario (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/usuarios/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "usuarios", ":id"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unidades",
+      "item": [
+        {
+          "name": "Listar Unidades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/unidades",
+              "host": ["{{base_url}}"],
+              "path": ["api", "unidades"]
+            }
+          }
+        },
+        {
+          "name": "Obter Unidade por Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/unidades/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "unidades", ":id"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        },
+        {
+          "name": "Criar Unidade",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"UN001\",\n  \"nome\": \"Matriz São Paulo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/unidades",
+              "host": ["{{base_url}}"],
+              "path": ["api", "unidades"]
+            }
+          }
+        },
+        {
+          "name": "Atualizar Nome da Unidade",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Matriz São Paulo - Centro\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/unidades/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "unidades", ":id"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        },
+        {
+          "name": "Ativar Unidade",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/unidades/:id/ativar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "unidades", ":id", "ativar"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        },
+        {
+          "name": "Inativar Unidade",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/unidades/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "unidades", ":id"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Colaboradores",
+      "item": [
+        {
+          "name": "Listar Colaboradores",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/colaboradores",
+              "host": ["{{base_url}}"],
+              "path": ["api", "colaboradores"]
+            }
+          }
+        },
+        {
+          "name": "Obter Colaborador por Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/colaboradores/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "colaboradores", ":id"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        },
+        {
+          "name": "Criar Colaborador (RN01/RN02)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"C001\",\n  \"nome\": \"João da Silva\",\n  \"usuarioId\": \"00000000-0000-0000-0000-000000000000\",\n  \"unidadeId\": \"00000000-0000-0000-0000-000000000000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/colaboradores",
+              "host": ["{{base_url}}"],
+              "path": ["api", "colaboradores"]
+            }
+          }
+        },
+        {
+          "name": "Atualizar Nome do Colaborador",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"João da Silva Júnior\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/colaboradores/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "colaboradores", ":id"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        },
+        {
+          "name": "Transferir Colaborador (RN02)",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"novaUnidadeId\": \"00000000-0000-0000-0000-000000000000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/colaboradores/:id/transferir",
+              "host": ["{{base_url}}"],
+              "path": ["api", "colaboradores", ":id", "transferir"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        },
+        {
+          "name": "Excluir Colaborador (Hard Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/colaboradores/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "colaboradores", ":id"],
+              "variable": [ { "key": "id", "value": "00000000-0000-0000-0000-000000000000" } ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

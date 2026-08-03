@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import 'tailwindcss';
+
+:root {
+  --background: #0c0f14;
+  --foreground: #e6ebf2;
+  --card: #12161d;
+  --card-foreground: #e6ebf2;
+  --primary: #d8f24b;
+  --primary-foreground: #14180a;
+  --secondary: #1a1f28;
+  --secondary-foreground: #c3cbd6;
+  --muted: #161b23;
+  --muted-foreground: #8b95a4;
+  --accent: #4bd6f2;
+  --accent-foreground: #08181c;
+  --border: #232a35;
+  --ring: #d8f24b;
+  --radius: 4px;
+
+  --ok: #63d97c;
+  --warn: #f2c14b;
+  --danger: #f2685b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --radius-token: var(--radius);
+  --font-sans: 'Archivo', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+html,
+body,
+app-root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Scrollbars stay hidden until the surface is actually scrolled. */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.scrolling {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.scrolling::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrolling::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 999px;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
+
+/* Grid paper texture used behind the login canvas. */
+.grid-paper {
+  background-image:
+    linear-gradient(to right, rgba(216, 242, 75, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(216, 242, 75, 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+}

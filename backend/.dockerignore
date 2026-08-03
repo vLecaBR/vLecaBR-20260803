@@ -1,0 +1,22 @@
+# Contexto de build da API = ./backend
+# Reduz o que é enviado ao daemon e evita copiar artefatos locais.
+
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# Testes não entram na imagem da API
+tests/
+
+# IDEs / editores
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Segredos / ambiente local
+**/appsettings.*.local.json
+.env
+.env.*

@@ -1,0 +1,110 @@
+import { Component, EventEmitter, inject, Input, OnChanges, Output, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { UnidadeService } from '../../core/services/unidade.service';
+import { ButtonComponent } from '../../shared/components/button/button.component';
+import { SelectFieldComponent, TextFieldComponent } from '../../shared/components/form-field/form-field';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
+import type { Status, Unidade } from '../../shared/models';
+
+@Component({
+  selector: 'app-unidade-form-modal',
+  standalone: true,
+  imports: [FormsModule, ModalComponent, ButtonComponent, TextFieldComponent, SelectFieldComponent],
+  template: `
+    <app-modal
+      [open]="open"
+      [title]="edicao ? 'Editar unidade ' + unidade?.codigo : 'Nova unidade'"
+      [subtitle]="
+        edicao
+          ? 'Na edição apenas o nome e a ativação/inativação da unidade são permitidos.'
+          : 'O código é único e usado como referência de negócio da unidade.'
+      "
+      (close)="onClose.emit()"
+    >
+      <div class="flex flex-col gap-4">
+        <app-text-field
+          label="Código"
+          placeholder="UN001"
+          [uppercase]="true"
+          [(ngModel)]="codigo"
+          [readonly]="edicao"
+          [hint]="edicao ? 'bloqueado' : 'ex.: UN001'"
+          name="codigo"
+        />
+        <app-text-field label="Nome" placeholder="Filial / centro" [(ngModel)]="nome" name="nome" />
+
+        <app-select-field [label]="edicao ? 'Situação da unidade' : 'Status'" [(ngModel)]="status" name="status">
+          <option value="Ativo">Ativo</option>
+          <option value="Inativo">Inativo</option>
+        </app-select-field>
+
+        @if (erro()) {
+          <p role="alert" class="border border-danger/40 bg-danger/10 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-danger">
+            {{ erro() }}
+          </p>
+        }
+      </div>
+
+      <ng-container footer>
+        <app-button variant="ghost" (click)="onClose.emit()">Cancelar</app-button>
+        <app-button variant="primary" [disabled]="salvando()" (click)="salvar()">
+          {{ salvando() ? 'Salvando…' : edicao ? 'Salvar alterações' : 'Cadastrar' }}
+        </app-button>
+      </ng-container>
+    </app-modal>
+  `,
+})
+export class UnidadeFormModalComponent implements OnChanges {
+  private readonly service = inject(UnidadeService);
+
+  /** `null` = cadastro; preenchido = edição. */
+  @Input() unidade: Unidade | null = null;
+  @Input() open = false;
+  @Output() onClose = new EventEmitter<void>();
+  @Output() onSaved = new EventEmitter<void>();
+
+  codigo = '';
+  nome = '';
+  status: Status = 'Ativo';
+  readonly salvando = signal(false);
+  readonly erro = signal<string | null>(null);
+
+  get edicao(): boolean {
+    return this.unidade !== null;
+  }
+
+  ngOnChanges(): void {
+    if (!this.open) {
+      return;
+    }
+    this.codigo = this.unidade?.codigo ?? '';
+    this.nome = this.unidade?.nome ?? '';
+    this.status = this.unidade?.status ?? 'Ativo';
+    this.erro.set(null);
+  }
+
+  salvar(): void {
+    if (!this.nome.trim() || (!this.edicao && !this.codigo.trim())) {
+      this.erro.set('Informe o código e o nome da unidade.');
+      return;
+    }
+    this.erro.set(null);
+    this.salvando.set(true);
+
+    // POST /api/unidades | edição: PUT nome + ativar/inativar
+    const request$ = this.edicao
+      ? this.service.atualizar(this.unidade!.id, { nome: this.nome, status: this.status })
+      : this.service.criar({ codigo: this.codigo, nome: this.nome, status: this.status });
+
+    request$.subscribe({
+      next: () => {
+        this.salvando.set(false);
+        this.onSaved.emit();
+      },
+      error: (e: Error) => {
+        this.erro.set(e.message);
+        this.salvando.set(false);
+      },
+    });
+  }
+}
