@@ -134,7 +134,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Fora de container aplica o redirect HTTPS; dentro do container (só HTTP exposto)
+// pula para evitar o warning "Failed to determine the https port for redirect".
+var rodandoEmContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+if (!rodandoEmContainer)
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors(CorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();

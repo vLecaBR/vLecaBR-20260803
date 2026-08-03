@@ -11,7 +11,7 @@ import { DataTableComponent } from '../../shared/components/data-table/data-tabl
 import { SelectFieldComponent, TextFieldComponent } from '../../shared/components/form-field/form-field';
 import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import type { Colaborador } from '../../shared/models';
+import type { Colaborador, Unidade } from '../../shared/models';
 import { ColaboradorFormModalComponent } from './colaborador-form-modal.component';
 
 @Component({
@@ -40,7 +40,7 @@ import { ColaboradorFormModalComponent } from './colaborador-form-modal.componen
         [metrics]="[
           { label: 'Total listado', valor: carregando() ? '—' : (colaboradores?.length ?? 0) },
           { label: 'Unidades ativas', valor: unidadesAtivas(unidades) },
-          { label: 'Filtro unidade', valor: unidadeFiltroLabel() },
+          { label: 'Filtro unidade', valor: unidadeFiltroLabel(unidades) },
           { label: 'Busca', valor: busca() ? '“' + busca() + '”' : '—' }
         ]"
       >
@@ -157,9 +157,13 @@ export class ColaboradoresPageComponent {
     return (unidades ?? []).filter((u) => u.status === 'Ativo').length;
   }
 
-  /** Rótulo amigável do filtro de unidade (o valor interno é o Guid). */
-  unidadeFiltroLabel(): string {
-    return this.unidadeFiltro() === 'TODAS' ? 'TODAS' : 'Unidade';
+  /** Rótulo do filtro de unidade: mostra o código da unidade selecionada (valor interno é o Guid). */
+  unidadeFiltroLabel(unidades: Unidade[] | null | undefined): string {
+    const id = this.unidadeFiltro();
+    if (id === 'TODAS') {
+      return 'TODAS';
+    }
+    return (unidades ?? []).find((u) => u.id === id)?.codigo ?? 'Unidade';
   }
 
   mudarBusca(valor: string): void {
