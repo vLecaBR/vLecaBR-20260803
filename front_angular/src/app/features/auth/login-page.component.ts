@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { TextFieldComponent } from '../../shared/components/form-field/form-field';
 
@@ -100,6 +101,7 @@ import { TextFieldComponent } from '../../shared/components/form-field/form-fiel
 export class LoginPageComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   login = 'master';
   senha = '';
@@ -125,6 +127,7 @@ export class LoginPageComponent {
       next: (resposta) => {
         this.auth.persistir(resposta, this.login);
         this.carregando.set(false);
+        this.toast.sucesso(`Bem-vindo, ${this.login}.`);
         this.router.navigate(['/app/colaboradores'], { replaceUrl: true });
       },
       error: (e: Error) => {

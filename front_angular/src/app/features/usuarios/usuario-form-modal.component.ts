@@ -1,5 +1,6 @@
 import { Component, EventEmitter, inject, Input, OnChanges, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../core/services/toast.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { SelectFieldComponent, TextFieldComponent } from '../../shared/components/form-field/form-field';
@@ -72,6 +73,7 @@ import type { Status, Usuario } from '../../shared/models';
 })
 export class UsuarioFormModalComponent implements OnChanges {
   private readonly service = inject(UsuarioService);
+  private readonly toast = inject(ToastService);
 
   /** `null` = cadastro; preenchido = edição. */
   @Input() usuario: Usuario | null = null;
@@ -118,9 +120,16 @@ export class UsuarioFormModalComponent implements OnChanges {
       ? this.service.atualizar(this.usuario!.id, { senha: this.senha || undefined, status: this.status })
       : this.service.criar({ codigo: this.codigo, login: this.login, senha: this.senha, status: this.status });
 
+    const mensagemOk = this.edicao
+      ? this.senha
+        ? 'Senha e status atualizados com sucesso.'
+        : 'Status do usuário atualizado com sucesso.'
+      : 'Usuário cadastrado com sucesso.';
+
     request$.subscribe({
       next: () => {
         this.salvando.set(false);
+        this.toast.sucesso(mensagemOk);
         this.onSaved.emit();
       },
       error: (e: Error) => {

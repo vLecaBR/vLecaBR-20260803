@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, debounceTime, switchMap, tap } from 'rxjs';
 import { ColaboradorService } from '../../core/services/colaborador.service';
+import { ToastService } from '../../core/services/toast.service';
 import { UnidadeService } from '../../core/services/unidade.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { ColumnDirective } from '../../shared/components/data-table/column.directive';
@@ -126,6 +127,7 @@ import { ColaboradorFormModalComponent } from './colaborador-form-modal.componen
 export class ColaboradoresPageComponent {
   private readonly service = inject(ColaboradorService);
   private readonly unidadeService = inject(UnidadeService);
+  private readonly toast = inject(ToastService);
 
   private readonly busca$ = new BehaviorSubject<string>('');
   private readonly unidade$ = new BehaviorSubject<string>('TODAS');
@@ -196,10 +198,12 @@ export class ColaboradoresPageComponent {
       next: () => {
         this.removendo.set(false);
         this.paraRemover.set(null);
+        this.toast.sucesso(`Colaborador ${alvo.nome} removido.`);
         this.refresh$.next();
       },
-      error: () => {
+      error: (e: Error) => {
         this.removendo.set(false);
+        this.toast.erro(e.message || 'Não foi possível remover o colaborador.');
       },
     });
   }

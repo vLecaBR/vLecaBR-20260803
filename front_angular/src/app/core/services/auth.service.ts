@@ -36,8 +36,26 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
+  /** Autenticado = token presente e ainda não expirado (valida o claim `exp` do JWT). */
   isAutenticado(): boolean {
-    return Boolean(localStorage.getItem(TOKEN_KEY));
+    const token = this.getToken();
+    if (!token) {
+      return false;
+    }
+    const expiraEmMs = this.expiracaoDoToken(token);
+    return expiraEmMs === null ? true : expiraEmMs > Date.now();
+  }
+
+  /** Decodifica o payload do JWT e retorna a expiração (ms) ou null se indisponível. */
+  private expiracaoDoToken(token: string): number | null {
+    try {
+      const payload = token.split('.')[1];
+      const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      const dados = JSON.parse(json) as { exp?: number };
+      return dados.exp ? dados.exp * 1000 : null;
+    } catch {
+      return null;
+    }
   }
 
   usuarioLogado(): UsuarioSessao | null {

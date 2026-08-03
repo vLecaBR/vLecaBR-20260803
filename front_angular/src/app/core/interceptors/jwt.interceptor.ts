@@ -25,7 +25,6 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   return next(autenticada).pipe(
     catchError((erro: HttpErrorResponse) => {
       if (erro.status === 401) {
-        // TODO(integração): tentar refresh token antes de encerrar a sessão.
         auth.logout();
         router.navigate(['/login']);
         return throwError(() => new Error('Sessão expirada.'));

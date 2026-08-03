@@ -3,6 +3,7 @@ import { Component, EventEmitter, inject, Input, OnChanges, Output, signal } fro
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { ColaboradorService } from '../../core/services/colaborador.service';
+import { ToastService } from '../../core/services/toast.service';
 import { UnidadeService } from '../../core/services/unidade.service';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
@@ -77,6 +78,7 @@ export class ColaboradorFormModalComponent implements OnChanges {
   private readonly service = inject(ColaboradorService);
   private readonly usuarioService = inject(UsuarioService);
   private readonly unidadeService = inject(UnidadeService);
+  private readonly toast = inject(ToastService);
 
   /** `null` = cadastro; preenchido = edição. */
   @Input() colaborador: Colaborador | null = null;
@@ -135,6 +137,7 @@ export class ColaboradorFormModalComponent implements OnChanges {
     request$.subscribe({
       next: () => {
         this.salvando.set(false);
+        this.toast.sucesso(this.edicao ? 'Colaborador atualizado com sucesso.' : 'Colaborador cadastrado com sucesso.');
         this.onSaved.emit();
       },
       error: (e: Error) => {

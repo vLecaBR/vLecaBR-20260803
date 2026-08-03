@@ -1,5 +1,6 @@
 import { Component, EventEmitter, inject, Input, OnChanges, Output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../core/services/toast.service';
 import { UnidadeService } from '../../core/services/unidade.service';
 import { ButtonComponent } from '../../shared/components/button/button.component';
 import { SelectFieldComponent, TextFieldComponent } from '../../shared/components/form-field/form-field';
@@ -56,6 +57,7 @@ import type { Status, Unidade } from '../../shared/models';
 })
 export class UnidadeFormModalComponent implements OnChanges {
   private readonly service = inject(UnidadeService);
+  private readonly toast = inject(ToastService);
 
   /** `null` = cadastro; preenchido = edição. */
   @Input() unidade: Unidade | null = null;
@@ -99,6 +101,7 @@ export class UnidadeFormModalComponent implements OnChanges {
     request$.subscribe({
       next: () => {
         this.salvando.set(false);
+        this.toast.sucesso(this.edicao ? 'Unidade atualizada com sucesso.' : 'Unidade cadastrada com sucesso.');
         this.onSaved.emit();
       },
       error: (e: Error) => {
