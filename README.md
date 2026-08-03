@@ -1,82 +1,132 @@
-# 🏢 Sistema de Gestão de Colaboradores e Unidades — Backend
+# 🏢 Sistema de Gestão de Colaboradores e Unidades
 
-API RESTful em **C# / .NET 8** para gestão de Usuários, Unidades e Colaboradores, construída com arquitetura em camadas (Domain-Driven), PostgreSQL, Entity Framework Core e autenticação JWT.
+Aplicação **full-stack** para gestão de Usuários, Unidades e Colaboradores, composta por uma **API RESTful em C# / .NET 8** (PostgreSQL, EF Core, JWT) e um **portal em Angular 20** que consome essa API. Todo o ambiente sobe via **Docker**.
 
-> Desenvolvida em **Spec-Driven Development**, seguindo rigorosamente o `BACKEND_SPECS.md` e aplicando as regras de negócio RN01 a RN04.
+> Projeto de avaliação técnica, desenvolvido em **Spec-Driven Development** e aplicando rigorosamente as regras de negócio RN01 a RN04.
 
 ---
 
 ## 📑 Sumário
 
+- [Visão Geral](#-visão-geral)
 - [Tecnologias](#-tecnologias)
+- [Estrutura do Monorepo](#-estrutura-do-monorepo)
 - [Arquitetura](#-arquitetura)
-- [Diferenciais Implementados](#-diferenciais-implementados)
+- [Funcionalidades do Portal](#-funcionalidades-do-portal)
 - [Regras de Negócio](#-regras-de-negócio-rn)
-- [Passo a Passo — Como Rodar](#-passo-a-passo--como-rodar)
+- [Diferenciais Implementados](#-diferenciais-implementados)
+- [Como Rodar](#-como-rodar)
 - [Credenciais do Usuário Master](#-credenciais-do-usuário-master-seed)
-- [Endpoints](#-endpoints)
+- [Endpoints da API](#-endpoints-da-api)
+- [Testes Automatizados](#-testes-automatizados)
 - [Testes via Postman](#-testes-via-postman)
+- [Conformidade com o Desafio](#-conformidade-com-o-desafio)
+
+---
+
+## 🔎 Visão Geral
+
+O sistema permite cadastrar e administrar **usuários de acesso**, **unidades organizacionais** e **colaboradores** vinculados a um usuário e a uma unidade. O acesso é protegido por **autenticação JWT (Bearer token)**, e o portal oferece todas as operações de CRUD com feedback visual (notificações), filtros e validação de regras de negócio ponta a ponta.
+
+Dois processos compõem a aplicação em desenvolvimento:
+
+| Serviço | Porta | Descrição |
+|---|---|---|
+| API (.NET 8) | `5080` | Backend REST + Swagger |
+| Portal (Angular) | `4200` | Frontend SPA |
+| PostgreSQL | `5432` | Banco de dados (via Docker) |
 
 ---
 
 ## 🚀 Tecnologias
 
+**Backend**
+
 | Categoria | Stack |
-|-----------|-------|
+|---|---|
 | Linguagem / Runtime | C# 12 · .NET 8 |
 | Persistência | PostgreSQL 16 · Entity Framework Core 8 (Npgsql) |
 | Segurança | JWT Bearer · BCrypt.Net-Next |
 | Documentação | Swagger / OpenAPI (Swashbuckle) |
-| Infraestrutura | Docker Compose |
+| Testes | xUnit · FluentAssertions · EF Core InMemory |
+
+**Frontend**
+
+| Categoria | Stack |
+|---|---|
+| Framework | Angular 20 (standalone components, signals) |
+| HTTP / Estado | HttpClient · RxJS · Angular Signals |
+| Estilo | Tailwind CSS 4 |
+| Segurança | Interceptor JWT · Route Guard com validação de expiração |
+
+**Infraestrutura**
+
+| Categoria | Stack |
+|---|---|
+| Contêineres | Docker · Docker Compose |
 | Testes de API | Postman Collection v2.1 |
 
 ---
 
-## 🏛 Arquitetura
-
-Solução em **4 projetos** com dependências unidirecionais (fluxo de dependência sempre apontando para o domínio):
-
-Repositório organizado como **monorepo**: backend .NET em `backend/` e frontend Angular em `front_angular/`.
+## 📂 Estrutura do Monorepo
 
 ```
 projeto_rodonaves/
 ├── backend/
 │   ├── GestaoColaboradores.sln
-│   └── src/
-│       ├── GestaoColaboradores.Domain          → Entidades ricas, Enums, BaseEntity (sem dependências)
-│       ├── GestaoColaboradores.Infrastructure  → DbContext, IEntityTypeConfiguration, Seed
-│       ├── GestaoColaboradores.Application      → Interfaces, Services, regras de negócio, JWT/BCrypt
-│       └── GestaoColaboradores.Api              → Controllers, DTOs, Middleware, Program.cs
-├── front_angular/                              → SPA Angular
-├── postman/                                    → Collection de testes
-└── docker-compose.yml                          → PostgreSQL local
+│   ├── Dockerfile                      → build multi-stage da API
+│   ├── src/
+│   │   ├── GestaoColaboradores.Domain          → Entidades ricas, Enums, BaseEntity (sem dependências)
+│   │   ├── GestaoColaboradores.Infrastructure  → DbContext, IEntityTypeConfiguration, Seed, Migrations
+│   │   ├── GestaoColaboradores.Application      → Interfaces, Services, regras de negócio, JWT/BCrypt
+│   │   └── GestaoColaboradores.Api              → Controllers, DTOs, Middleware, Program.cs
+│   └── tests/
+│       └── GestaoColaboradores.Tests           → Testes unitários (xUnit)
+├── front_angular/
+│   └── src/app/
+│       ├── core/          → services (HttpClient), interceptor JWT, guard, toasts
+│       ├── shared/        → models, componentes reutilizáveis (tabela, modal, toast…)
+│       └── features/      → auth, dashboard, usuarios, colaboradores, unidades
+├── postman/               → Collection de testes com auto-injeção de token
+├── docker-compose.yml     → PostgreSQL + API
+└── README.md
 ```
-
-- **Domain-Driven / Modelo Rico:** as entidades encapsulam seu estado (setters privados) e só mudam via métodos de comportamento (`Inativar()`, `AlterarSenha()`, `TransferirPara()`). Estado inválido é impossível de construir.
-- **MVC isolado:** os Controllers são finos — apenas orquestram serviços e mapeiam DTOs, sem lógica de negócio.
-- **DIP (SOLID):** cada serviço tem interface (`IAuthService`, `IUsuarioService`, etc.), resolvidas por injeção de dependência.
 
 ---
 
-## ✨ Diferenciais Implementados
+## 🏛 Arquitetura
 
-- **Modelo de Domínio Rico** com `BaseEntity` abstrata (DRY) centralizando `Id`, `DataCriacao` e `DataAtualizacao`.
-- **EF Core Fluent API** isolada em classes `IEntityTypeConfiguration<T>` (uma por entidade), com índices únicos (`IsUnique`) e `DeleteBehavior.Restrict`.
-- **Seed determinístico** do Usuário Master com **hash BCrypt real** — o primeiro login já funciona.
-- **Hashing seguro de senhas** com BCrypt (work factor 11); o hash **nunca** é exposto no JSON de resposta.
-- **Estratégias de exclusão distintas:** *Hard Delete* para Colaborador (`Remove()`) e *Soft Delete* para Usuário (`Inativar()`).
-- **Features do .NET 8:** `IExceptionHandler` para tratamento global de erros retornando `ProblemDetails` (sem vazar stack trace), records para DTOs, primary constructors.
-- **Swagger com botão "Authorize"** — cole o Bearer token e teste tudo pelo navegador.
-- **Migração automática** (`Database.Migrate()`) na subida da API — sobe o schema e o seed sem passos manuais.
-- **Testes unitários (xUnit + FluentAssertions)** cobrindo as regras RN01–RN04, soft/hard delete e o filtro por status.
-- **Containerização completa** — `Dockerfile` multi-stage da API + `docker-compose` que sobe banco **e** API juntos.
+### Backend — camadas com dependência unidirecional (apontando para o domínio)
+
+- **Domain-Driven / Modelo Rico:** as entidades encapsulam o estado (setters privados) e só mudam via métodos de comportamento (`Inativar()`, `AlterarSenha()`, `TransferirPara()`). Estado inválido é impossível de construir.
+- **MVC isolado:** os Controllers são finos — apenas orquestram serviços e mapeiam DTOs, sem lógica de negócio.
+- **DIP (SOLID):** cada serviço tem interface (`IAuthService`, `IUsuarioService`, `IUnidadeService`, `IColaboradorService`), resolvidas por injeção de dependência.
+- **Herança (DRY):** `BaseEntity` abstrata centraliza `Id`, `DataCriacao` e `DataAtualizacao`.
+
+### Frontend — Angular standalone + signals
+
+- **Componentes standalone** com lazy-loading por rota (`loadComponent`).
+- **Camada `core`:** um serviço por recurso, cada um mapeando 1:1 com os endpoints da API via `HttpClient`.
+- **Interceptor JWT:** anexa `Authorization: Bearer <token>` em toda requisição, trata `401` encerrando a sessão e traduz o `ProblemDetails` da API em mensagem amigável.
+- **Route Guard:** protege a área logada e **valida a expiração** do JWT (decodifica o claim `exp`), não só a presença do token.
+- **Feedback ao usuário:** serviço de **toasts** (notificações) para sucesso/erro em todas as operações.
+
+---
+
+## 🖥 Funcionalidades do Portal
+
+- **Autenticação** — tela de login que obtém e persiste o token JWT; sessão de 60 minutos.
+- **Usuários** — cadastro (código, login, senha, status), edição de **senha e status** (login/código imutáveis), listagem com **filtro por status**.
+- **Unidades** — cadastro (código único, nome), ativação/inativação, listagem com **expansão dos colaboradores relacionados**.
+- **Colaboradores** — cadastro (código, nome, usuário e unidade), edição de nome e **transferência de unidade**, remoção, busca por nome/login e filtro por unidade.
+- **Regras de negócio ativas na UI** — mensagens claras quando se tenta, por exemplo, vincular um colaborador a uma unidade inativa (RN02) ou usar um código já existente (RN04).
 
 ---
 
 ## 📋 Regras de Negócio (RN)
 
 | Regra | Descrição | Onde é aplicada |
-|-------|-----------|-----------------|
+|---|---|---|
 | **RN01** | Colaborador precisa estar vinculado a um usuário existente | `ColaboradorService` + construtor da entidade |
 | **RN02** | Bloquear inclusão/transferência de colaborador para unidade **Inativa** | `ColaboradorService` + guarda de domínio `Colaborador` |
 | **RN03** | Não alterar Login/Código do usuário após criação (apenas Senha e Status) | Garantido por construção — a entidade não expõe esses setters |
@@ -84,98 +134,95 @@ projeto_rodonaves/
 
 ---
 
-## 🛠 Passo a Passo — Como Rodar
+## ✨ Diferenciais Implementados
+
+**Backend**
+
+- Modelo de Domínio Rico com `BaseEntity` abstrata (herança + DRY).
+- EF Core **Fluent API** isolada em `IEntityTypeConfiguration<T>`, com índices únicos (`IsUnique`) e `DeleteBehavior.Restrict`.
+- **Seed determinístico** do Usuário Master com **hash BCrypt real** — o primeiro login já funciona.
+- Senhas com **BCrypt** (work factor 11); o hash **nunca** é exposto no JSON.
+- **Hard Delete** para Colaborador e **Soft Delete** (inativação) para Usuário.
+- **`IExceptionHandler` (.NET 8)** com `ProblemDetails` — sem vazar stack trace.
+- **CORS** liberado para o portal Angular (`localhost:4200`).
+- **Swagger com botão Authorize**, **migração automática** na subida e **HTTPS redirect** condicional (silencioso em container).
+- **Testes unitários (xUnit + FluentAssertions)** das regras RN01–RN04, soft/hard delete e filtro por status.
+- **Containerização completa** — Dockerfile multi-stage + `docker-compose` subindo banco **e** API.
+
+**Frontend**
+
+- **Notificações (toasts)** de sucesso e erro em todas as ações.
+- **Guard com validação de expiração do JWT**.
+- Serviços tipados batendo 1:1 com os DTOs do backend.
+- Design system próprio (Tailwind), componentes reutilizáveis e estados de carregamento/vazio.
+
+---
+
+## 🛠 Como Rodar
 
 ### Pré-requisitos
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+
 - [Docker](https://www.docker.com/) + Docker Compose
+- [Node.js 20+](https://nodejs.org/) (para o frontend)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) — **opcional**, apenas para rodar/testar a API fora do Docker
 
-### 1️⃣ Suba a infraestrutura (Docker)
+### 1️⃣ Subir banco + API (Docker)
 
-Na raiz do projeto, você tem duas opções:
+Na raiz do projeto:
 
 ```bash
-# Opção A — subir SÓ o banco (para rodar a API localmente via dotnet no passo 2)
-docker compose up -d postgres
-
-# Opção B — subir banco + API já containerizada (build automático da imagem)
 docker compose up -d --build
 ```
 
-O PostgreSQL 16 sobe na porta `5432` (banco `gestao_colaboradores`, usuário `gestao` / senha `gestao123`), com `healthcheck` e volume persistente. Na Opção B, a API sobe em `http://localhost:5080` e só inicia após o banco ficar saudável.
+Isso sobe o **PostgreSQL 16** (porta `5432`, banco `gestao_colaboradores`, usuário `gestao` / senha `gestao123`) e a **API** em `http://localhost:5080`, que só inicia após o banco ficar saudável. Na subida, a API aplica as migrations automaticamente (`Database.Migrate()`), criando o schema e o **Usuário Master** do seed.
 
-> Usando a Opção B, você pode pular o passo 2 e ir direto ao Swagger.
+Confira em `http://localhost:5080/swagger`.
 
-### 2️⃣ Rode a API (.NET)
+> Para subir apenas o banco (e rodar a API localmente com `dotnet run`): `docker compose up -d postgres`.
 
-> Todos os comandos .NET abaixo assumem que você está **dentro da pasta `backend/`**.
+### 2️⃣ Subir o Portal (Angular)
 
-```bash
-# A partir da raiz do projeto, entre na pasta do backend
-cd backend
-
-# Restaurar dependências
-dotnet restore
-
-# (Opcional) Se preferir aplicar as migrations manualmente:
-dotnet ef database update --project src/GestaoColaboradores.Infrastructure --startup-project src/GestaoColaboradores.Api
-
-# Rodar a API — as migrations pendentes (e o Seed do Master) são aplicadas automaticamente na subida
-dotnet run --project src/GestaoColaboradores.Api
-```
-
-> Se ainda não existir a migração inicial, gere-a uma única vez (também de dentro de `backend/`):
-> ```bash
-> dotnet ef migrations add InitialCreate --project src/GestaoColaboradores.Infrastructure --startup-project src/GestaoColaboradores.Api
-> ```
-
-A API sobe em **http://localhost:5080** e o Swagger fica em:
-
-```
-http://localhost:5080/swagger
-```
-
-### 3️⃣ Rode o Frontend (Angular)
-
-Em outro terminal, a partir de `front_angular/`:
+Em outro terminal:
 
 ```bash
 cd front_angular
 npm install
-npm start   # ng serve — sobe em http://localhost:4200
+npm start        # ng serve — http://localhost:4200
 ```
 
-O frontend consome a API real (`http://localhost:5080/api`, configurado em `src/environments/environment.ts`). O backend já libera CORS para `http://localhost:4200`. Faça login com o Usuário Master; o token JWT é salvo no `localStorage` e anexado automaticamente pelo interceptor em todas as requisições.
+O portal consome a API em `http://localhost:5080/api` (configurado em `src/environments/environment.ts`). O CORS do backend já libera `http://localhost:4200`.
 
-### 4️⃣ Faça o primeiro acesso
+### 3️⃣ Acessar
 
-Use as credenciais do Usuário Master (criadas automaticamente pelo Seed) na tela de login do portal, ou direto na rota `POST /api/auth/login`.
+Abra `http://localhost:4200` e entre com as credenciais do Usuário Master. O token é salvo no `localStorage` e anexado automaticamente pelo interceptor.
+
+> **Rodando a API fora do Docker?** De dentro de `backend/`: `dotnet restore` e `dotnet run --project src/GestaoColaboradores.Api`. Se precisar (re)gerar a migration inicial: `dotnet ef migrations add InitialCreate --project src/GestaoColaboradores.Infrastructure --startup-project src/GestaoColaboradores.Api`.
 
 ---
 
 ## 🔑 Credenciais do Usuário Master (Seed)
 
 | Campo | Valor |
-|-------|-------|
+|---|---|
 | **Login** | `master` |
 | **Senha** | `Master@123` |
 
-No Swagger: faça o login, copie o `token` retornado, clique em **Authorize** (cadeado 🔒), cole `Bearer <token>` e teste as rotas protegidas.
+No Swagger: faça o login, copie o `token`, clique em **Authorize** 🔒, cole `Bearer <token>` e teste as rotas protegidas.
 
 ---
 
-## 🌐 Endpoints
+## 🌐 Endpoints da API
 
 Base: `http://localhost:5080`
 
 ### Auth
 | Método | Rota | Descrição | Auth |
-|--------|------|-----------|------|
+|---|---|---|---|
 | POST | `/api/auth/login` | Autentica e retorna JWT | 🔓 Pública |
 
 ### Usuários
 | Método | Rota | Descrição |
-|--------|------|-----------|
+|---|---|---|
 | GET | `/api/usuarios` | Lista usuários (filtro opcional `?status=Ativo` \| `Inativo`) |
 | GET | `/api/usuarios/{id}` | Obtém por Id |
 | POST | `/api/usuarios` | Cria usuário |
@@ -185,7 +232,7 @@ Base: `http://localhost:5080`
 
 ### Unidades
 | Método | Rota | Descrição |
-|--------|------|-----------|
+|---|---|---|
 | GET | `/api/unidades` | Lista unidades **com os colaboradores relacionados** |
 | GET | `/api/unidades/{id}` | Obtém por Id (com colaboradores) |
 | POST | `/api/unidades` | Cria unidade |
@@ -195,7 +242,7 @@ Base: `http://localhost:5080`
 
 ### Colaboradores
 | Método | Rota | Descrição |
-|--------|------|-----------|
+|---|---|---|
 | GET | `/api/colaboradores` | Lista colaboradores |
 | GET | `/api/colaboradores/{id}` | Obtém por Id |
 | POST | `/api/colaboradores` | Cria (RN01/RN02) |
@@ -209,30 +256,44 @@ Base: `http://localhost:5080`
 
 ## 🧪 Testes Automatizados
 
-Testes unitários dos serviços (xUnit + FluentAssertions + EF Core InMemory), cobrindo as regras de negócio. De dentro da pasta `backend/`:
+Testes unitários dos serviços (xUnit + FluentAssertions + EF Core InMemory). De dentro de `backend/`:
 
 ```bash
 dotnet test
 ```
 
-Cobertura dos cenários principais: vínculo válido de colaborador, RN01 (usuário inexistente), RN02 (unidade inativa na criação e na transferência), RN04 (código/login duplicados), Soft Delete de usuário, Hard Delete de colaborador, filtro por status e hashing/troca de senha com BCrypt.
+Cobrem: vínculo válido de colaborador, RN01 (usuário inexistente), RN02 (unidade inativa na criação e na transferência), RN04 (código/login duplicados), Soft Delete de usuário, Hard Delete de colaborador, filtro por status e hashing/troca de senha com BCrypt.
 
 ---
 
 ## 📮 Testes via Postman
 
-A Collection pronta está em:
+Collection pronta em `postman/GestaoColaboradores.postman_collection.json`.
 
-```
-postman/GestaoColaboradores.postman_collection.json
-```
-
-Passos:
-
-1. No Postman: **Import** → selecione o arquivo acima.
+1. No Postman: **Import** → selecione o arquivo.
 2. A collection já traz as variáveis `{{base_url}}` (`http://localhost:5080`) e `{{token}}`.
-3. Execute **Auth › Login (Master)**. Um script na aba *Tests* **captura o token automaticamente** e o grava em `{{token}}`.
-4. Todas as demais requisições herdam a autenticação Bearer da collection — basta dispará-las, sem colar token manualmente.
+3. Execute **Auth › Login (Master)** — um script na aba *Tests* **captura o token automaticamente** e o grava em `{{token}}`.
+4. As demais requisições herdam a autenticação Bearer da collection — basta dispará-las.
+
+---
+
+## ✅ Conformidade com o Desafio
+
+| Requisito | Status |
+|---|---|
+| Backend em C# | ✅ .NET 8, arquitetura em camadas |
+| Frontend em Angular | ✅ Portal completo integrado à API |
+| Banco PostgreSQL | ✅ EF Core + Npgsql |
+| CRUD de Usuários (+ consulta por status) | ✅ |
+| CRUD de Colaboradores (vínculo com usuário e unidade) | ✅ |
+| CRUD de Unidades (+ colaboradores relacionados) | ✅ |
+| Inativar unidade bloqueia novos colaboradores (RN02) | ✅ |
+| Docker para o banco | ✅ (e também para a API) |
+| Autenticação Bearer token | ✅ JWT + BCrypt |
+| Arquitetura MVC | ✅ |
+| Pattern de herança | ✅ `BaseEntity` |
+| Portal com todas as funcionalidades | ✅ |
+| Testes via Postman | ✅ Collection v2.1 |
 
 ---
 
