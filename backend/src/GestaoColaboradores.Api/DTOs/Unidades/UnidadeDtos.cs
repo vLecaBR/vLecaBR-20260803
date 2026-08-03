@@ -4,11 +4,11 @@ using GestaoColaboradores.Domain.Enums;
 namespace GestaoColaboradores.Api.DTOs.Unidades;
 
 public record CriarUnidadeRequest(
-    [property: Required] string Codigo,
-    [property: Required] string Nome);
+    [Required] string Codigo,
+    [Required] string Nome);
 
 public record AtualizarUnidadeRequest(
-    [property: Required] string Nome);
+    [Required] string Nome);
 
 /// <summary>Resumo de um colaborador vinculado a uma unidade.</summary>
 public record ColaboradorResumoResponse(

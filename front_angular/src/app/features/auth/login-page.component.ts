@@ -31,7 +31,7 @@ import { TextFieldComponent } from '../../shared/components/form-field/form-fiel
           </h1>
           <p class="mt-5 max-w-md text-[14px] leading-relaxed text-muted-foreground">
             Cadastro de usuários, vínculo de colaboradores e controle de unidades operando sobre a mesma
-            base — com trilha de auditoria e autenticação por token.
+            base com trilha de auditoria e autenticação por token.
           </p>
         </div>
 

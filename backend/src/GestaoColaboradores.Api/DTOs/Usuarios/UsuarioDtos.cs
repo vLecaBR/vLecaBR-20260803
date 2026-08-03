@@ -5,13 +5,13 @@ namespace GestaoColaboradores.Api.DTOs.Usuarios;
 
 /// <summary>Criação de usuário. RN04 (código/login únicos) validada na camada de serviço.</summary>
 public record CriarUsuarioRequest(
-    [property: Required] string Codigo,
-    [property: Required] string Login,
-    [property: Required, MinLength(6)] string Senha);
+    [Required] string Codigo,
+    [Required] string Login,
+    [Required, MinLength(6)] string Senha);
 
 /// <summary>Alteração de senha — único dado de credencial mutável (RN03).</summary>
 public record AlterarSenhaRequest(
-    [property: Required, MinLength(6)] string NovaSenha);
+    [Required, MinLength(6)] string NovaSenha);
 
 /// <summary>
 /// Resposta de usuário. NÃO inclui SenhaHash — o hash jamais é exposto no JSON.

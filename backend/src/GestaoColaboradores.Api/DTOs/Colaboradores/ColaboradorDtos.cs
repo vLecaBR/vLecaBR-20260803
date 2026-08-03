@@ -3,16 +3,16 @@ using System.ComponentModel.DataAnnotations;
 namespace GestaoColaboradores.Api.DTOs.Colaboradores;
 
 public record CriarColaboradorRequest(
-    [property: Required] string Codigo,
-    [property: Required] string Nome,
-    [property: Required] Guid UsuarioId,
-    [property: Required] Guid UnidadeId);
+    [Required] string Codigo,
+    [Required] string Nome,
+    [Required] Guid UsuarioId,
+    [Required] Guid UnidadeId);
 
 public record AtualizarColaboradorRequest(
-    [property: Required] string Nome);
+    [Required] string Nome);
 
 public record TransferirColaboradorRequest(
-    [property: Required] Guid NovaUnidadeId);
+    [Required] Guid NovaUnidadeId);
 
 /// <summary>
 /// Resposta de colaborador. Expõe apenas os identificadores/labels necessários
