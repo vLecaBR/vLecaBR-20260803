@@ -82,7 +82,7 @@ projeto_rodonaves/
 │   │   └── GestaoColaboradores.Api              → Controllers, DTOs, Middleware, Program.cs
 │   └── tests/
 │       └── GestaoColaboradores.Tests           → Testes unitários (xUnit)
-├── front_angular/
+├── frontend/
 │   └── src/app/
 │       ├── core/          → services (HttpClient), interceptor JWT, guard, toasts
 │       ├── shared/        → models, componentes reutilizáveis (tabela, modal, toast…)
@@ -185,7 +185,7 @@ Confira em `http://localhost:5080/swagger`.
 Em outro terminal:
 
 ```bash
-cd front_angular
+cd frontend
 npm install
 npm start        # ng serve — http://localhost:4200
 ```

@@ -1,6 +1,6 @@
 # ==========================================================================
 #  .dockerignore — reduz o contexto de build enviado ao Docker daemon
-#  Estrutura monorepo: backend/ (.NET) e front_angular/ (Angular)
+#  Estrutura monorepo: backend/ (.NET) e frontend/ (Angular)
 # ==========================================================================
 
 # Build output do .NET (backend/)
@@ -11,7 +11,7 @@ backend/**/publish/
 backend/**/artifacts/
 
 # Frontend Angular (não faz parte da imagem do backend)
-front_angular/
+frontend/
 
 # IDEs / editores
 .vs/
