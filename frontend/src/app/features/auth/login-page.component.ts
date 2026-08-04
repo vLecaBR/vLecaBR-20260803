@@ -42,7 +42,7 @@ import { TextFieldComponent } from '../../shared/components/form-field/form-fiel
               <dt class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 {{ item.label }}
               </dt>
-              <dd class="mt-1 font-mono text-2xl tabular-nums text-foreground">{{ item.valor }}</dd>
+              <dd class="mt-1 font-mono text-[15px] leading-tight text-foreground">{{ item.valor }}</dd>
             </div>
           }
         </dl>
@@ -108,10 +108,11 @@ export class LoginPageComponent {
   readonly erro = signal<string | null>(null);
   readonly carregando = signal(false);
 
+  // Módulos do sistema — rótulos descritivos (sem dados fictícios).
   readonly vitrine = [
-    { label: 'Unidades', valor: '05' },
-    { label: 'Colaboradores', valor: '08' },
-    { label: 'Acessos ativos', valor: '06' },
+    { label: 'Acessos', valor: 'Usuários' },
+    { label: 'Pessoas', valor: 'Colaboradores' },
+    { label: 'Estrutura', valor: 'Unidades' },
   ];
 
   submeter(): void {
